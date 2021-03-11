@@ -65,6 +65,10 @@
         public bool Hooked { get; set; }
         public bool Running { get; set; }
 
-        public string GetFormattedName { get { return string.Format("({0})\t{1}\t- Running: {2}", Process.Id, Name, Running ? "Yes" : "No"); } }
+        public string GetFormattedName {
+            get {
+                return string.Format("({0})\t{1}\t- Running: {2}", Process == null ? 0 : Process.Id, Name, Running ? "Yes" : "No");
+            }
+        }
     }
 }

@@ -19,6 +19,18 @@ namespace CameraHackTool
         {
             InitializeComponent();
 
+            // uncomment to test many processes
+            //AllSelectedProcesses.Add(new ProcessModel { Name = "1", Running = false });
+            //AllSelectedProcesses.Add(new ProcessModel { Name = "2", Running = false });
+            //AllSelectedProcesses.Add(new ProcessModel { Name = "3", Running = false });
+            //AllSelectedProcesses.Add(new ProcessModel { Name = "4", Running = false });
+            //AllSelectedProcesses.Add(new ProcessModel { Name = "5", Running = false });
+            //AllSelectedProcesses.Add(new ProcessModel { Name = "6", Running = false });
+            //AllSelectedProcesses.Add(new ProcessModel { Name = "7", Running = false });
+            //AllSelectedProcesses.Add(new ProcessModel { Name = "8", Running = false });
+            //AllSelectedProcesses.Add(new ProcessModel { Name = "9", Running = false });
+            //AllSelectedProcesses.Add(new ProcessModel { Name = "10", Running = false });
+
             ListBox_RunningProcesses.DataContext = AllSelectedProcesses;
         }
 
