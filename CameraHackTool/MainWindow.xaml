@@ -1,0 +1,27 @@
+﻿<Window x:Class="CameraHackTool.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CameraHackTool"
+        mc:Ignorable="d"
+        Title="ChipCameraHack" Height="310" Width="535" Icon="Resources/Logo.ico" Closing="Window_Closing">
+    <Grid>
+        <Button x:Name="Button_DoTheThing" Content="Apply To All Processes" HorizontalAlignment="Left" Margin="10,96,0,0" VerticalAlignment="Top" Width="200" Click="Button_DoTheThing_Click" Height="50"/>
+        <Button x:Name="Button_LoadProcess" Content="Select Process" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="200" Click="Button_LoadProcess_Click" Height="50"/>
+        <ListBox x:Name="ListBox_RunningProcesses" ItemsSource="{Binding}" HorizontalAlignment="Left" Height="163" Margin="215,41,0,0" VerticalAlignment="Top" Width="300" SelectionChanged="ListBox_RunningProcesses_SelectionChanged">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <TextBlock Text="{Binding GetFormattedName}" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <Button x:Name="Button_StopProcess" Content="Stop" HorizontalAlignment="Left" Margin="215,209,0,0" VerticalAlignment="Top" Width="90" Click="Button_StopProcess_Click" Height="50"/>
+        <Button x:Name="Button_StopAllProcesses" Content="Stop All" HorizontalAlignment="Left" Margin="321,209,0,0" VerticalAlignment="Top" Width="90" Click="Button_StopAllProcesses_Click" Height="50"/>
+        <Button x:Name="Button_RemoveProcess" Content="Remove" HorizontalAlignment="Left" Margin="425,209,0,0" VerticalAlignment="Top" Width="90" Click="Button_RemoveProcess_Click" Height="50"/>
+        <Label x:Name="Label_Description" Content="Current Characters:" HorizontalAlignment="Left" Margin="215,10,0,0" VerticalAlignment="Top" Width="300" HorizontalContentAlignment="Center"/>
+        <Image x:Name="Image_Logo" HorizontalAlignment="Left" Height="100" Margin="55,159,0,0" VerticalAlignment="Top" Width="100" Source="Resources/Logo.ico"/>
+    </Grid>
+</Window>
