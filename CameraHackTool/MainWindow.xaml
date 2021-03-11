@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CameraHackTool"
         mc:Ignorable="d"
-        Title="ChipCameraHack" Height="310" Width="540" Icon="Resources/Logo.ico" Closing="Window_Closing" MinWidth="540" MinHeight="310">
+        Title="ChipCameraHack v1.1" Height="310" Width="540" Icon="Resources/Logo.ico" Closing="Window_Closing" MinWidth="540" MinHeight="310">
     <Grid MinWidth="540" MinHeight="280">
         <Button x:Name="Button_DoTheThing" Content="Apply To All Processes" HorizontalAlignment="Left" Margin="10,96,0,0" VerticalAlignment="Top" Width="200" Click="Button_DoTheThing_Click" Height="50"/>
         <Button x:Name="Button_LoadProcess" Content="Select Process" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="200" Click="Button_LoadProcess_Click" Height="50"/>
