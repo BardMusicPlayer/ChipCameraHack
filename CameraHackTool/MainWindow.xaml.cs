@@ -38,11 +38,7 @@ namespace CameraHackTool
         {
             foreach (var proc in AllSelectedProcesses)
             {
-                if (proc.Running == false)
-                {
-                    Memory.RunCameraHack(proc.Process);
-                    proc.Running = true;
-                }
+                StartProcess(proc);
             }
 
             ListBox_RunningProcesses.Items.Refresh();
@@ -66,10 +62,22 @@ namespace CameraHackTool
             }
         }
 
+        private void StartProcess(ProcessModel proc)
+        {
+            if (proc.Running == false)
+            {
+                Memory.RunCameraHack(proc.Process);
+                proc.Running = true;
+            }
+        }
+
         private void StopProcess(ProcessModel proc)
         {
-            Memory.StopCameraHack(proc.Process);
-            proc.Running = false;
+            if (proc.Running == true)
+            {
+                Memory.StopCameraHack(proc.Process);
+                proc.Running = false;
+            }
         }
 
         private void RemoveProcess(ProcessModel proc)
@@ -124,6 +132,24 @@ namespace CameraHackTool
             }
 
             ListBox_RunningProcesses.Items.Refresh();
+        }
+
+        private void ListBox_RunningProcesses_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if ((sender as ListBox).SelectedItem != null)
+            {
+                HighlightedProcess = ((sender as ListBox).SelectedItem as ProcessModel);
+                if (HighlightedProcess.Running)
+                {
+                    StopProcess(HighlightedProcess);
+                }
+                else
+                {
+                    StartProcess(HighlightedProcess);
+                }
+
+                ListBox_RunningProcesses.Items.Refresh();
+            }
         }
     }
 }
