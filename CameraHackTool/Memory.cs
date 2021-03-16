@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using static CameraHackTool.Metadata;
 
 namespace CameraHackTool
 {
@@ -123,49 +124,11 @@ namespace CameraHackTool
             ProcessAccessFlags.VirtualMemoryOperation |
             ProcessAccessFlags.QueryInformation;
 
-        private class MemoryAddressAndOffset
-        {
-            public int Address;
-            public int Offset;
-            public float DefValue;
-        }
-
-        private static MemoryAddressAndOffset DX11_CameraCurZoomAccess { get; } = new MemoryAddressAndOffset
-        {
-            Address = int.Parse("1D8A070", NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-            Offset = int.Parse("114", NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-            DefValue = 0.0f,
-        };
-        private static MemoryAddressAndOffset DX11_CameraMaxZoomAccess { get; } = new MemoryAddressAndOffset
-        {
-            Address = int.Parse("1D8A070", NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-            Offset = int.Parse("11C", NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-            DefValue = 0.0f,
-        };
-        private static MemoryAddressAndOffset DX11_CameraCurFOVAccess { get; } = new MemoryAddressAndOffset
-        {
-            Address = int.Parse("1D8A070", NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-            Offset = int.Parse("120", NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-            DefValue = 0.0f,
-        };
-        private static MemoryAddressAndOffset DX11_CameraAngleXAccess { get; } = new MemoryAddressAndOffset
-        {
-            Address = int.Parse("1D8A070", NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-            Offset = int.Parse("130", NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-            DefValue = 0.0f,
-        };
-        private static MemoryAddressAndOffset DX11_CameraAngleYAccess { get; } = new MemoryAddressAndOffset
-        {
-            Address = int.Parse("1D8A070", NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-            Offset = int.Parse("134", NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-            DefValue = 0.0f,
-        };
-        private static MemoryAddressAndOffset DX11_CameraHeightAccess { get; } = new MemoryAddressAndOffset
-        {
-            Address = int.Parse("1D8A310", NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-            Offset = int.Parse("124", NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-            DefValue = 1.0f,
-        };
+        private static MemoryAddressAndOffset DX11_CameraCurZoomAccess { get; } = Metadata.Instance.CameraZoom;
+        private static MemoryAddressAndOffset DX11_CameraCurFOVAccess { get; } = Metadata.Instance.CameraFOV;
+        private static MemoryAddressAndOffset DX11_CameraAngleXAccess { get; } = Metadata.Instance.CameraAngleX;
+        private static MemoryAddressAndOffset DX11_CameraAngleYAccess { get; } = Metadata.Instance.CameraAngleY;
+        private static MemoryAddressAndOffset DX11_CameraHeightAccess { get; } = Metadata.Instance.CameraHeight;
 
         public static string GetCharacterNameFromProcess(Process process)
         {

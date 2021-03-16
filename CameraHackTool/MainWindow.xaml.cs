@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Diagnostics;
 
 namespace CameraHackTool
 {
@@ -46,6 +47,12 @@ namespace CameraHackTool
 
         private void Button_LoadProcess_Click(object sender, RoutedEventArgs e)
         {
+            // TODO: obvious
+            if (!Metadata.Instance.grabApplicationMetadata("CameraHackTool"))
+            {
+                Debug.WriteLine("Something has gone terribly wrong");
+            }
+
             ProcessSelection processSelection = new ProcessSelection();
             Nullable<bool> dialogResult = processSelection.ShowDialog();
             if (dialogResult == true)
