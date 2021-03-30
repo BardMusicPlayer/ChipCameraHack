@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net;
+using System.Text;
+using System.Windows;
 using System.Xml.Linq;
 
 namespace CameraHackTool
@@ -27,7 +30,7 @@ namespace CameraHackTool
             
             try
             {
-                var xmlf = XDocument.Load(finalUrl);
+                XDocument xmlf = XDocument.Load(finalUrl);
                 var root = xmlf.Element("Root");
 
                 foreach (var element in root.Elements())
@@ -67,24 +70,26 @@ namespace CameraHackTool
 
                 return true;
             }
-            catch
+            catch (Exception e)
             {
-                // no internet? something failed?
-                return false;
+                MessageBox.Show(
+                    "Unable to read offsets from server. Reason: " + e.Message + "\n\n" + e.StackTrace,
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error
+                );
             }
+
+            return false;
         }
 
         public class MemoryAddressAndOffset
         {
             public readonly int Address;
             public readonly int Offset;
-            public float DefValue;
 
             public MemoryAddressAndOffset(int addr, int off)
             {
                 this.Address = addr;
                 this.Offset = off;
-                this.DefValue = float.NaN;
             }
         }
 

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Diagnostics;
+using System.Windows.Threading;
 
 namespace CameraHackTool
 {
@@ -32,7 +33,23 @@ namespace CameraHackTool
             //AllSelectedProcesses.Add(new ProcessModel { Name = "9", Running = false });
             //AllSelectedProcesses.Add(new ProcessModel { Name = "10", Running = false });
 
+            // initialize singletons
+            Memory.TheMainWindow = this;
+
+            // initialize delegates
+            this.Loaded += MainWindow_Loaded;
+
+            // initialize variables
             ListBox_RunningProcesses.DataContext = AllSelectedProcesses;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (!Metadata.Instance.grabApplicationMetadata("CameraHackTool"))
+            {
+                Debug.WriteLine("Something has gone terribly wrong");
+                Application.Current.Shutdown();
+            }
         }
 
         private void Button_DoTheThing_Click(object sender, RoutedEventArgs e)
@@ -47,12 +64,6 @@ namespace CameraHackTool
 
         private void Button_LoadProcess_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: obvious
-            if (!Metadata.Instance.grabApplicationMetadata("CameraHackTool"))
-            {
-                Debug.WriteLine("Something has gone terribly wrong");
-            }
-
             ProcessSelection processSelection = new ProcessSelection();
             Nullable<bool> dialogResult = processSelection.ShowDialog();
             if (dialogResult == true)
@@ -89,10 +100,29 @@ namespace CameraHackTool
 
         private void RemoveProcess(ProcessModel proc)
         {
-            StopProcess(proc);
-            proc.Hooked = false;
-            AllSelectedProcesses.Remove(AllSelectedProcesses.Where(x => x.Process.Id == proc.Process.Id).ToList()[0]);
-            proc = null;
+            try
+            {
+                StopProcess(proc);
+                proc.Hooked = false;
+                AllSelectedProcesses.Remove(AllSelectedProcesses.Where(x => x.Process.Id == proc.Process.Id).ToList()[0]);
+                proc = null;
+                ListBox_RunningProcesses.Items.Refresh();
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(
+                    "Something FUBAR is happening. Reason: " + e.Message + "\n\n" + e.StackTrace,
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error
+                );
+            }
+        }
+
+        public void RemoveProcessFromId(int pid)
+        {
+            this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => {
+                ProcessModel selectedModel = AllSelectedProcesses.Where(x => x.Process.Id == pid).ToList()[0];
+                RemoveProcess(selectedModel);
+            }));
         }
 
         private void Button_StopProcess_Click(object sender, RoutedEventArgs e)

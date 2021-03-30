@@ -16,20 +16,28 @@
             InitializeComponent();
 
             if (ProcessList == null)
-            {
                 ProcessList = new List<ProcessModel>();
+
+            {
                 foreach (var proc in Process.GetProcesses())
                 {
-                    if (string.Equals(proc.ProcessName, "ffxiv_dx11"))
+                    List<ProcessModel> compared = ProcessList.AsParallel().Where(x => x.Process.Id == proc.Id).ToList();
+                    if (compared.Count == 0)
                     {
-                        string characterName = Memory.GetCharacterNameFromProcess(proc);
-                        ProcessList.Add(new ProcessModel
+                        if (string.Equals(proc.ProcessName, "ffxiv_dx11"))
                         {
-                            Name = characterName,
-                            Process = proc,
-                            Hooked = false,
-                            Running = false
-                        });
+                            string characterName = Memory.GetCharacterNameFromProcess(proc);
+                            if (characterName.Length > 0)
+                            {
+                                ProcessList.Add(new ProcessModel
+                                {
+                                    Name = characterName,
+                                    Process = proc,
+                                    Hooked = false,
+                                    Running = false
+                                });
+                            }
+                        }
                     }
                 }
             }
@@ -67,7 +75,7 @@
 
         public string GetFormattedName {
             get {
-                return string.Format("({0})\t{1}\t- Running: {2}", Process == null ? 0 : Process.Id, Name, Running ? "Yes" : "No");
+                return string.Format("({0})\t| Active: {1} | {2}", Process == null ? 0 : Process.Id, Running ? "✓" : "✗", Name);
             }
         }
     }

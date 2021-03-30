@@ -13,15 +13,14 @@ namespace CameraHackTool
 {
     public class Memory
     {
+        public static MainWindow TheMainWindow = null;
         private static Dictionary<int, ThreadHandler> CurrentRunningProcesses { get; } = new Dictionary<int, ThreadHandler>();
 
         public static void RunCameraHack(Process ffxivGame)
         {
-            RunCameraHack(ffxivGame.Id);
-        }
+            ffxivGame.Exited += GameExited;
 
-        public static void RunCameraHack(int pid)
-        {
+            int pid = ffxivGame.Id;
             if (CurrentRunningProcesses.ContainsKey(pid))
             {
                 // do nothing
@@ -31,18 +30,22 @@ namespace CameraHackTool
             CurrentRunningProcesses.Add(pid, new ThreadHandler());
 
             ThreadHandler th = CurrentRunningProcesses[pid];
-            th.Id = pid;
+            th.Process = ffxivGame;
             th.Handle = new Thread(new ParameterizedThreadStart(SpamMemoryWritesThread));
             th.Handle.Start(th);
         }
 
-        public static void StopCameraHack(Process ffxivGame)
+        private static void GameExited(object sender, EventArgs e)
         {
-            StopCameraHack(ffxivGame.Id);
+            Debug.WriteLine("Stopping thread, because the game was closed");
+            StopCameraHack(sender as Process);
         }
 
-        public static void StopCameraHack(int pid)
+        public static void StopCameraHack(Process ffxivGame)
         {
+            ffxivGame.Exited -= GameExited;
+
+            int pid = ffxivGame.Id;
             if (CurrentRunningProcesses.ContainsKey(pid))
             {
                 CurrentRunningProcesses[pid].CloseAndJoinThread();
@@ -64,47 +67,78 @@ namespace CameraHackTool
             var hProcess = IntPtr.Zero;
             try
             {
-                hProcess = OpenProcess(ProcessFlags, false, (handler as ThreadHandler).Id);
+                hProcess = OpenProcess(ProcessFlags, false, (handler as ThreadHandler).Process.Id);
                 if (hProcess == null)
                 {
                     throw new Exception("Unable to OpenProcess");
                 }
 
-                ReadX64(DX11_CameraCurFOVAccess, hProcess, out DX11_CameraCurFOVAccess.DefValue);
-                ReadX64(DX11_CameraCurZoomAccess, hProcess, out DX11_CameraCurZoomAccess.DefValue);
-                ReadX64(DX11_CameraAngleXAccess, hProcess, out DX11_CameraAngleXAccess.DefValue);
-                ReadX64(DX11_CameraAngleYAccess, hProcess, out DX11_CameraAngleYAccess.DefValue);
-                ReadX64(DX11_CameraHeightAccess, hProcess, out DX11_CameraHeightAccess.DefValue);
+                // read the local params
+                float cameraCurFov, cameraCurZoom, cameraAngleX, cameraAngleY, cameraHeight;
 
+                ReadX64(DX11_CameraCurFOVAccess, hProcess, out cameraCurFov);
+                ReadX64(DX11_CameraCurZoomAccess, hProcess, out cameraCurZoom);
+                ReadX64(DX11_CameraAngleXAccess, hProcess, out cameraAngleX);
+                ReadX64(DX11_CameraAngleYAccess, hProcess, out cameraAngleY);
+                ReadX64(DX11_CameraHeightAccess, hProcess, out cameraHeight);
+
+                Console.WriteLine($"{cameraCurFov}, {cameraCurZoom}, {cameraAngleX}, {cameraAngleY}, {cameraHeight}");
+
+                // and i run
+                // i run so far away
                 while ((handler as ThreadHandler).shouldRun)
                 {
-                    ApplyX64(DX11_CameraCurFOVAccess, 0.01f, hProcess);
-                    ApplyX64(DX11_CameraCurZoomAccess, 0.01f, hProcess);
-                    ApplyX64(DX11_CameraAngleXAccess, 0.00f, hProcess);
-                    ApplyX64(DX11_CameraAngleYAccess, 1.00f, hProcess);
-                    ApplyX64(DX11_CameraHeightAccess, 3000.0f, hProcess);
+                    try
+                    {
+                        ApplyX64(DX11_CameraCurFOVAccess, 0.01f, hProcess);
+                        ApplyX64(DX11_CameraCurZoomAccess, 0.01f, hProcess);
+                        ApplyX64(DX11_CameraAngleXAccess, 0.00f, hProcess);
+                        ApplyX64(DX11_CameraAngleYAccess, 1.00f, hProcess);
+                        ApplyX64(DX11_CameraHeightAccess, 3000.0f, hProcess);
 
-                    Thread.Sleep(100);
+                        Thread.Sleep(100);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Something happened, probably best to just stop everything.");
+                        // StopCameraHack((handler as ThreadHandler).Process);
+                        TheMainWindow.RemoveProcessFromId((handler as ThreadHandler).Process.Id);
+
+                        // we still have to do this
+                        if (hProcess != IntPtr.Zero)
+                        {
+                            CloseHandle(hProcess);
+                            hProcess = IntPtr.Zero;
+                        }
+                        break;
+                    }
                 }
 
-                ApplyX64(DX11_CameraCurFOVAccess, DX11_CameraCurFOVAccess.DefValue, hProcess);
-                ApplyX64(DX11_CameraCurZoomAccess, DX11_CameraCurZoomAccess.DefValue, hProcess);
-                ApplyX64(DX11_CameraAngleXAccess, DX11_CameraAngleXAccess.DefValue, hProcess);
-                ApplyX64(DX11_CameraAngleYAccess, DX11_CameraAngleYAccess.DefValue, hProcess);
-                ApplyX64(DX11_CameraHeightAccess, DX11_CameraHeightAccess.DefValue, hProcess);
+                // we could have a null process here, so check for that
+                // also, fuck threading
+                if (hProcess != IntPtr.Zero)
+                {
+                    // reapply the params
+                    ApplyX64(DX11_CameraCurFOVAccess, cameraCurFov, hProcess);
+                    ApplyX64(DX11_CameraCurZoomAccess, cameraCurZoom, hProcess);
+                    ApplyX64(DX11_CameraAngleXAccess, cameraAngleX, hProcess);
+                    ApplyX64(DX11_CameraAngleYAccess, cameraAngleY, hProcess);
+                    ApplyX64(DX11_CameraHeightAccess, cameraHeight, hProcess);
+                }
             }
             finally
             {
                 if (hProcess != IntPtr.Zero)
                 {
                     CloseHandle(hProcess);
+                    hProcess = IntPtr.Zero;
                 }
             }
         }
 
         private class ThreadHandler
         {
-            public int Id;
+            public Process Process = null;
             public Thread Handle = null;
             public bool shouldRun = true;
 
@@ -113,7 +147,8 @@ namespace CameraHackTool
                 if (Handle != null)
                 {
                     shouldRun = false;
-                    Handle.Join();
+                    if (Handle.ThreadState == System.Threading.ThreadState.Running)
+                        Handle.Join();
                 }
             }
         }
@@ -124,11 +159,11 @@ namespace CameraHackTool
             ProcessAccessFlags.VirtualMemoryOperation |
             ProcessAccessFlags.QueryInformation;
 
-        private static MemoryAddressAndOffset DX11_CameraCurZoomAccess { get; } = Metadata.Instance.CameraZoom;
-        private static MemoryAddressAndOffset DX11_CameraCurFOVAccess { get; } = Metadata.Instance.CameraFOV;
-        private static MemoryAddressAndOffset DX11_CameraAngleXAccess { get; } = Metadata.Instance.CameraAngleX;
-        private static MemoryAddressAndOffset DX11_CameraAngleYAccess { get; } = Metadata.Instance.CameraAngleY;
-        private static MemoryAddressAndOffset DX11_CameraHeightAccess { get; } = Metadata.Instance.CameraHeight;
+        private static MemoryAddressAndOffset DX11_CameraCurZoomAccess { get { return Metadata.Instance.CameraZoom; } }
+        private static MemoryAddressAndOffset DX11_CameraCurFOVAccess { get { return Metadata.Instance.CameraFOV; } }
+        private static MemoryAddressAndOffset DX11_CameraAngleXAccess { get { return Metadata.Instance.CameraAngleX; } }
+        private static MemoryAddressAndOffset DX11_CameraAngleYAccess { get { return Metadata.Instance.CameraAngleY; } }
+        private static MemoryAddressAndOffset DX11_CameraHeightAccess { get { return Metadata.Instance.CameraHeight; } }
 
         public static string GetCharacterNameFromProcess(Process process)
         {
