@@ -16,6 +16,32 @@ namespace CameraHackTool
         public static MainWindow TheMainWindow = null;
         private static Dictionary<int, ThreadHandler> CurrentRunningProcesses { get; } = new Dictionary<int, ThreadHandler>();
 
+        private static string GAS(params string[] args) => MemoryManager.GetAddressString(args);
+
+        public static bool floatEquals(float a, float b, float epsilon)
+        {
+            const float floatNormal = (1 << 23) * float.Epsilon;
+            float absA = Math.Abs(a);
+            float absB = Math.Abs(b);
+            float diff = Math.Abs(a - b);
+
+            if (a == b)
+            {
+                // Shortcut, handles infinities
+                return true;
+            }
+
+            if (a == 0.0f || b == 0.0f || diff < floatNormal)
+            {
+                // a or b is zero, or both are extremely close to it.
+                // relative error is less meaningful here
+                return diff < (epsilon * floatNormal);
+            }
+
+            // use relative error
+            return diff / Math.Min((absA + absB), float.MaxValue) < epsilon;
+        }
+
         public static void RunCameraHack(Process ffxivGame)
         {
             ffxivGame.Exited += GameExited;
@@ -80,9 +106,11 @@ namespace CameraHackTool
                 ReadX64(DX11_CameraCurZoomAccess, hProcess, out cameraCurZoom);
                 ReadX64(DX11_CameraAngleXAccess, hProcess, out cameraAngleX);
                 ReadX64(DX11_CameraAngleYAccess, hProcess, out cameraAngleY);
-                ReadX64(DX11_CameraHeightAccess, hProcess, out cameraHeight);
+                //ReadX64(DX11_CameraHeightAccess, hProcess, out cameraHeight);
 
-                Console.WriteLine($"{cameraCurFov}, {cameraCurZoom}, {cameraAngleX}, {cameraAngleY}, {cameraHeight}");
+                var m = MemoryManager.Instance.MemLib;
+                cameraHeight = m.readFloat(Metadata.Instance.CameraHeightAddress);
+                Console.WriteLine("current camera height = " + cameraHeight.ToString());
 
                 // and i run
                 // i run so far away
@@ -94,7 +122,9 @@ namespace CameraHackTool
                         ApplyX64(DX11_CameraCurZoomAccess, 0.01f, hProcess);
                         ApplyX64(DX11_CameraAngleXAccess, 0.00f, hProcess);
                         ApplyX64(DX11_CameraAngleYAccess, 1.00f, hProcess);
-                        ApplyX64(DX11_CameraHeightAccess, 3000.0f, hProcess);
+                        //ApplyX64(DX11_CameraHeightAccess, 3000.0f, hProcess);
+
+                        m.writeMemory(Metadata.Instance.CameraHeightAddress, "float", (3000.0f).ToString());
 
                         Thread.Sleep(100);
                     }
@@ -123,7 +153,8 @@ namespace CameraHackTool
                     ApplyX64(DX11_CameraCurZoomAccess, cameraCurZoom, hProcess);
                     ApplyX64(DX11_CameraAngleXAccess, cameraAngleX, hProcess);
                     ApplyX64(DX11_CameraAngleYAccess, cameraAngleY, hProcess);
-                    ApplyX64(DX11_CameraHeightAccess, cameraHeight, hProcess);
+                    //ApplyX64(DX11_CameraHeightAccess, cameraHeight, hProcess);
+                    m.writeMemory(Metadata.Instance.CameraHeightAddress, "float", cameraHeight.ToString());
                 }
             }
             finally
@@ -163,29 +194,26 @@ namespace CameraHackTool
         private static MemoryAddressAndOffset DX11_CameraCurFOVAccess { get { return Metadata.Instance.CameraFOV; } }
         private static MemoryAddressAndOffset DX11_CameraAngleXAccess { get { return Metadata.Instance.CameraAngleX; } }
         private static MemoryAddressAndOffset DX11_CameraAngleYAccess { get { return Metadata.Instance.CameraAngleY; } }
-        private static MemoryAddressAndOffset DX11_CameraHeightAccess { get { return Metadata.Instance.CameraHeight; } }
 
         public static string GetCharacterNameFromProcess(Process process)
         {
             string playerName = "(Unknown)";
-            MemoryHandler.Instance.SetProcess(new Sharlayan.Models.ProcessModel
-            {
-                Process = process,
-                IsWin64 = process.ProcessName.Contains("_dx11")
-            });
 
-            while (Scanner.Instance.IsScanning)
+            Metadata.Instance.FetchOffsets(process);
+            var m = MemoryManager.Instance.MemLib;
+            var addrBase = MemoryManager.Instance.BaseAddress;
+            var currentBase = MemoryManager.Add(addrBase, (8).ToString("X"));
+
+            playerName = m.readString(GAS(currentBase, "30"));
+
+            Metadata.Instance.CameraHeightAddress = GAS(currentBase, "124");
+            for (int skip = 30; skip < 500; skip += 1)
             {
-                // TODO: Make this safe
-                Thread.Sleep(10);
+                float cameraHeight = m.readFloat(GAS(currentBase, skip.ToString()));
+                if (floatEquals(cameraHeight, 1.42069f, 0.0001f))
+                    Console.WriteLine("height at skip: " + skip + " = " + cameraHeight);
             }
 
-            if (Reader.CanGetPlayerInfo())
-            {
-                playerName = Reader.GetCurrentPlayer().CurrentPlayer.Name;
-            }
-
-            MemoryHandler.Instance.UnsetProcess();
             return playerName;
         }
 
