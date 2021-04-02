@@ -138,12 +138,6 @@
   <ItemGroup>
     <Resource Include="Resources\Logo.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\sharlayan\Sharlayan\Sharlayan.csproj">
-      <Project>{9510d5ef-208a-4897-a582-8eae5c6e9406}</Project>
-      <Name>Sharlayan</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Fody.4.0.2\build\Fody.targets" Condition="Exists('..\packages\Fody.4.0.2\build\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
