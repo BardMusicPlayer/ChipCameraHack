@@ -57,6 +57,9 @@ namespace CameraHackTool
                                 int.Parse(element.Element("CameraAngleY").Element("Address").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                                 int.Parse(element.Element("CameraAngleY").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
                             );
+
+                            this.PlayerNameOffset = int.Parse(element.Element("PlayerNameOffset").Value, NumberStyles.Integer, CultureInfo.InvariantCulture).ToString();
+                            this.CameraHeightOffset = int.Parse(element.Element("CameraHeightOffset").Value, NumberStyles.Integer, CultureInfo.InvariantCulture).ToString();
                             break;
                     }
                 }
@@ -86,9 +89,12 @@ namespace CameraHackTool
             }
         }
 
-        public MemoryAddressAndOffset CameraZoom { get; set; }
-        public MemoryAddressAndOffset CameraFOV { get; set; }
-        public MemoryAddressAndOffset CameraAngleX { get; set; }
-        public MemoryAddressAndOffset CameraAngleY { get; set; }
+        public MemoryAddressAndOffset CameraZoom { get; private set; }
+        public MemoryAddressAndOffset CameraFOV { get; private set; }
+        public MemoryAddressAndOffset CameraAngleX { get; private set; }
+        public MemoryAddressAndOffset CameraAngleY { get; private set; }
+
+        public string PlayerNameOffset { get; private set; }
+        public string CameraHeightOffset { get; private set; }
     }
 }

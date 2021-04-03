@@ -177,7 +177,7 @@ namespace CameraHackTool
             var m = MemoryManager.Instance.MemLib;
             var addrBase = MemoryManager.Instance.BaseAddress;
             var currentBase = MemoryManager.Add(addrBase, (8).ToString("X"));
-            playerName = m.readString(GAS(currentBase, "30"));
+            playerName = m.readString(GAS(currentBase, Metadata.Instance.PlayerNameOffset));
             m.closeProcess();
 
             return playerName;
@@ -189,7 +189,7 @@ namespace CameraHackTool
 
             var addrBase = MemoryManager.Instance.BaseAddress;
             var currentBase = MemoryManager.Add(addrBase, (8).ToString("X"));
-            string cameraHeightAddress = GAS(currentBase, "124");
+            string cameraHeightAddress = GAS(currentBase, Metadata.Instance.CameraHeightOffset);
 
             int size = 16;
             byte[] memoryAddress = new byte[size];
