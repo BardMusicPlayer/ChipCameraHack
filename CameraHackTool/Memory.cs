@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Windows;
 using static CameraHackTool.Metadata;
 
 namespace CameraHackTool
@@ -12,32 +15,6 @@ namespace CameraHackTool
     {
         public static MainWindow TheMainWindow = null;
         private static Dictionary<int, ThreadHandler> CurrentRunningProcesses { get; } = new Dictionary<int, ThreadHandler>();
-
-        private static string GAS(params string[] args) => MemoryManager.GetAddressString(args);
-
-        public static bool floatEquals(float a, float b, float epsilon)
-        {
-            const float floatNormal = (1 << 23) * float.Epsilon;
-            float absA = Math.Abs(a);
-            float absB = Math.Abs(b);
-            float diff = Math.Abs(a - b);
-
-            if (a == b)
-            {
-                // Shortcut, handles infinities
-                return true;
-            }
-
-            if (a == 0.0f || b == 0.0f || diff < floatNormal)
-            {
-                // a or b is zero, or both are extremely close to it.
-                // relative error is less meaningful here
-                return diff < (epsilon * floatNormal);
-            }
-
-            // use relative error
-            return diff / Math.Min((absA + absB), float.MaxValue) < epsilon;
-        }
 
         public static void RunCameraHack(Process ffxivGame)
         {
@@ -96,6 +73,9 @@ namespace CameraHackTool
                     throw new Exception("Unable to OpenProcess");
                 }
 
+                // read static addresses from opened process
+                IntPtr cameraHeightAddress = SearchForCameraHeightAddress(hProcess);
+
                 // read the local params
                 float cameraCurFov, cameraCurZoom, cameraAngleX, cameraAngleY, cameraHeight;
 
@@ -103,11 +83,8 @@ namespace CameraHackTool
                 ReadX64(DX11_CameraCurZoomAccess, hProcess, out cameraCurZoom);
                 ReadX64(DX11_CameraAngleXAccess, hProcess, out cameraAngleX);
                 ReadX64(DX11_CameraAngleYAccess, hProcess, out cameraAngleY);
-                //ReadX64(DX11_CameraHeightAccess, hProcess, out cameraHeight);
 
-                var m = MemoryManager.Instance.MemLib;
-                cameraHeight = m.readFloat(Metadata.Instance.CameraHeightAddress);
-                Console.WriteLine("current camera height = " + cameraHeight.ToString());
+                Read(out cameraHeight, hProcess, cameraHeightAddress);
 
                 // and i run
                 // i run so far away
@@ -119,16 +96,14 @@ namespace CameraHackTool
                         ApplyX64(DX11_CameraCurZoomAccess, 0.01f, hProcess);
                         ApplyX64(DX11_CameraAngleXAccess, 0.00f, hProcess);
                         ApplyX64(DX11_CameraAngleYAccess, 1.00f, hProcess);
-                        //ApplyX64(DX11_CameraHeightAccess, 3000.0f, hProcess);
 
-                        m.writeMemory(Metadata.Instance.CameraHeightAddress, "float", (3000.0f).ToString());
+                        Write(3000.0f, hProcess, cameraHeightAddress);
 
                         Thread.Sleep(100);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         Console.WriteLine("Something happened, probably best to just stop everything.");
-                        // StopCameraHack((handler as ThreadHandler).Process);
                         TheMainWindow.RemoveProcessFromId((handler as ThreadHandler).Process.Id);
 
                         // we still have to do this
@@ -150,8 +125,8 @@ namespace CameraHackTool
                     ApplyX64(DX11_CameraCurZoomAccess, cameraCurZoom, hProcess);
                     ApplyX64(DX11_CameraAngleXAccess, cameraAngleX, hProcess);
                     ApplyX64(DX11_CameraAngleYAccess, cameraAngleY, hProcess);
-                    //ApplyX64(DX11_CameraHeightAccess, cameraHeight, hProcess);
-                    m.writeMemory(Metadata.Instance.CameraHeightAddress, "float", cameraHeight.ToString());
+
+                    Write(cameraHeight, hProcess, cameraHeightAddress);
                 }
             }
             finally
@@ -194,24 +169,122 @@ namespace CameraHackTool
 
         public static string GetCharacterNameFromProcess(Process process)
         {
-            string playerName = "(Unknown)";
+            string GAS(params string[] args) => MemoryManager.GetAddressString(args);
 
-            Metadata.Instance.FetchOffsets(process);
+            FetchOffsets(process);
+
+            string playerName = "(Unknown)";
             var m = MemoryManager.Instance.MemLib;
             var addrBase = MemoryManager.Instance.BaseAddress;
             var currentBase = MemoryManager.Add(addrBase, (8).ToString("X"));
-
             playerName = m.readString(GAS(currentBase, "30"));
-
-            Metadata.Instance.CameraHeightAddress = GAS(currentBase, "124");
-            for (int skip = 30; skip < 500; skip += 1)
-            {
-                float cameraHeight = m.readFloat(GAS(currentBase, skip.ToString()));
-                if (floatEquals(cameraHeight, 1.42069f, 0.0001f))
-                    Console.WriteLine("height at skip: " + skip + " = " + cameraHeight);
-            }
+            m.closeProcess();
 
             return playerName;
+        }
+
+        private static IntPtr SearchForCameraHeightAddress(IntPtr pHandle)
+        {
+            string GAS(params string[] args) => MemoryManager.GetAddressString(args);
+
+            var addrBase = MemoryManager.Instance.BaseAddress;
+            var currentBase = MemoryManager.Add(addrBase, (8).ToString("X"));
+            string cameraHeightAddress = GAS(currentBase, "124");
+
+            int size = 16;
+            byte[] memoryAddress = new byte[size];
+
+            string newOffsets = cameraHeightAddress;
+            List<Int64> offsetsList = new List<Int64>();
+            string[] newerOffsets = newOffsets.Split(',');
+            foreach (string oldOffsets in newerOffsets)
+            {
+                string test = oldOffsets;
+                if (oldOffsets.Contains("0x"))
+                {
+                    test = oldOffsets.Replace("0x", "");
+                }
+
+                Int64 preParse = 0;
+                if (!oldOffsets.Contains("-"))
+                {
+                    preParse = Int64.Parse(test, NumberStyles.AllowHexSpecifier);
+                }
+                else
+                {
+                    test = test.Replace("-", "");
+                    preParse = Int64.Parse(test, NumberStyles.AllowHexSpecifier);
+                    preParse = preParse * -1;
+                }
+
+                offsetsList.Add(preParse);
+            }
+
+            Int64[] offsets = offsetsList.ToArray();
+            Memory.ReadProcessMemory(pHandle, (IntPtr)(offsets[0]), memoryAddress, (IntPtr)size, IntPtr.Zero);
+
+            Int64 num1 = BitConverter.ToInt64(memoryAddress, 0);
+            IntPtr base1 = (IntPtr)0;
+            try
+            {
+                for (int i = 1; i < offsets.Length; i++)
+                {
+                    base1 = new IntPtr(Convert.ToInt64(num1 + offsets[i]));
+                    Memory.ReadProcessMemory(pHandle, base1, memoryAddress, (IntPtr)size, IntPtr.Zero);
+                    num1 = BitConverter.ToInt64(memoryAddress, 0);
+                }
+            }
+            catch
+            {
+                MessageBox.Show(
+                    "Unable to read addresses from memory.",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error
+                );
+
+                throw new Exception("Unable to read addresses from memory in FetchOffsets.");
+            }
+
+            return base1;
+        }
+
+        // This is SUPER janky but I don't want to spend time implementing something better right now.
+        // This function assumes you know what you're doing and is not going to sanity check anything.
+        private static long GetStaticAddressFromSig(Mem m, long address, int skip, bool baseOffset = false)
+        {
+            var read = m.readBytes(new UIntPtr((ulong)address), 8 + skip);
+            var offset = BitConverter.ToInt32(read, skip);
+            if (baseOffset)
+                return m.theProc.MainModule.BaseAddress.ToInt64() + offset;
+            return address + skip + offset + 4;
+        }
+
+        private static void FetchOffsets(Process process)
+        {
+            var m = MemoryManager.Instance.MemLib;
+            if (!m.OpenProcess(process.Id))
+            {
+                MessageBox.Show(
+                    "Unable to read addresses from memory.",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error
+                );
+
+                throw new Exception("Unable to read addresses from memory in FetchOffsets.");
+            }
+            var start = m.theProc.MainModule.BaseAddress.ToInt64();
+            var end = start + m.theProc.MainModule.ModuleMemorySize;
+
+            // Shorthand function even though I could just make the entire function in this scope I decided not to.
+            string GSAFS(string signature, int skip, int adjust = 0, bool baseOffset = false)
+            {
+                var addr = m.AoBScan(start, end, signature).FirstOrDefault();
+                if (addr == 0)
+                    throw new Exception("Invalid address found!");
+
+                return (GetStaticAddressFromSig(m, addr, skip, baseOffset) + adjust).ToString("X");
+            }
+
+            // Getting static addresses from assembly.
+            MemoryManager.Instance.BaseAddress = GSAFS("88 91 ?? ?? ?? ?? 48 8D 3D ?? ?? ?? ??", 9, -8);
         }
 
         private static void ApplyX64(MemoryAddressAndOffset data, float value, IntPtr hProcess)
@@ -318,6 +391,9 @@ namespace CameraHackTool
         
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern bool ReadProcessMemory(IntPtr processHandle, IntPtr lpBaseAddress, [In][Out] byte[] lpBuffer, IntPtr regionSize, out IntPtr lpNumberOfBytesRead);
+
+        [DllImport("kernel32.dll")]
+        public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, IntPtr nSize, IntPtr lpNumberOfBytesRead);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int nSize, out IntPtr lpNumberOfBytesWritten);
