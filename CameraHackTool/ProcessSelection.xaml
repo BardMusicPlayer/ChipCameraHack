@@ -5,13 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FFXIVUtil"
         mc:Ignorable="d"
-        Title="Select Process" Height="300" Width="300">
+        Title="Select Process" Height="300" Width="300" Background="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="150*"/>
             <ColumnDefinition Width="150*"/>
         </Grid.ColumnDefinitions>
-        <ListBox x:Name="ListBox_Processes" Margin="10,10,10,46" ItemsSource="{Binding}" Grid.ColumnSpan="2" SelectionMode="Multiple">
+        <ListBox x:Name="ListBox_Processes" Margin="10,10,10,46" ItemsSource="{Binding}" Grid.ColumnSpan="2" SelectionMode="Multiple" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>
@@ -20,7 +20,7 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <Button x:Name="Button_OpenAllProcess" Content="Open All Processes" Margin="0,0,0,10" Click="Button_OpenAllProcess_Click" HorizontalAlignment="Center" Width="125" Height="20" VerticalAlignment="Bottom" Grid.Column="0"/>
-        <Button x:Name="Button_OpenThisProcess" Content="Open This Process" Margin="0,0,0,10" Click="Button_OpenThisProcess_Click" HorizontalAlignment="Center" Width="125" Height="20" VerticalAlignment="Bottom" Grid.Column="1"/>
+        <Button x:Name="Button_OpenAllProcess" Content="Open All Processes" Margin="0,0,0,10" Click="Button_OpenAllProcess_Click" HorizontalAlignment="Center" Width="125" Height="20" VerticalAlignment="Bottom" Grid.Column="0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"/>
+        <Button x:Name="Button_OpenThisProcess" Content="Open This Process" Margin="0,0,0,10" Click="Button_OpenThisProcess_Click" HorizontalAlignment="Center" Width="125" Height="20" VerticalAlignment="Bottom" Grid.Column="1" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"/>
     </Grid>
 </Window>

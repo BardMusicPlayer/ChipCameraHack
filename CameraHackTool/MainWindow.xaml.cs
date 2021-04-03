@@ -65,6 +65,8 @@ namespace CameraHackTool
         private void Button_LoadProcess_Click(object sender, RoutedEventArgs e)
         {
             ProcessSelection processSelection = new ProcessSelection();
+            processSelection.Top = this.Top;
+            processSelection.Left = this.Left;
             Nullable<bool> dialogResult = processSelection.ShowDialog();
             if (dialogResult == true)
             {
