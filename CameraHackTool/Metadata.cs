@@ -41,20 +41,36 @@ namespace CameraHackTool
                             this.UpdateDLUrl = element.Value;
                             break;
                         case "AppMetadata":
-                            this.CameraZoom = new MemoryAddressAndOffset(
+                            this.CameraZoom_Live = new MemoryAddressAndOffset(
                                 int.Parse(element.Element("CameraZoom").Element("Address").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                                 int.Parse(element.Element("CameraZoom").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
                             );
-                            this.CameraFOV = new MemoryAddressAndOffset(
+                            this.CameraFOV_Live = new MemoryAddressAndOffset(
                                 int.Parse(element.Element("CameraFOV").Element("Address").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                                 int.Parse(element.Element("CameraFOV").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
                             );
-                            this.CameraAngleX = new MemoryAddressAndOffset(
+                            this.CameraAngleX_Live = new MemoryAddressAndOffset(
                                 int.Parse(element.Element("CameraAngleX").Element("Address").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                                 int.Parse(element.Element("CameraAngleX").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
                             );
-                            this.CameraAngleY = new MemoryAddressAndOffset(
+                            this.CameraAngleY_Live = new MemoryAddressAndOffset(
                                 int.Parse(element.Element("CameraAngleY").Element("Address").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                                int.Parse(element.Element("CameraAngleY").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
+                            );
+                            this.CameraZoom_KO = new MemoryAddressAndOffset(
+                                int.Parse(element.Element("CameraZoom").Element("AddressKO").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                                int.Parse(element.Element("CameraZoom").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
+                            );
+                            this.CameraFOV_KO = new MemoryAddressAndOffset(
+                                int.Parse(element.Element("CameraFOV").Element("AddressKO").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                                int.Parse(element.Element("CameraFOV").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
+                            );
+                            this.CameraAngleX_KO = new MemoryAddressAndOffset(
+                                int.Parse(element.Element("CameraAngleX").Element("AddressKO").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                                int.Parse(element.Element("CameraAngleX").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
+                            );
+                            this.CameraAngleY_KO = new MemoryAddressAndOffset(
+                                int.Parse(element.Element("CameraAngleY").Element("AddressKO").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                                 int.Parse(element.Element("CameraAngleY").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
                             );
 
@@ -77,6 +93,31 @@ namespace CameraHackTool
             return false;
         }
 
+        public void InitializeToRegion(string region)
+        {
+            if (region == "Live")
+            {
+                this.CameraZoom = this.CameraZoom_Live;
+                this.CameraFOV = this.CameraFOV_Live;
+                this.CameraAngleX = this.CameraAngleX_Live;
+                this.CameraAngleY = this.CameraAngleY_Live;
+            }
+            else if (region == "ko")
+            {
+                this.CameraZoom = this.CameraZoom_KO;
+                this.CameraFOV = this.CameraFOV_KO;
+                this.CameraAngleX = this.CameraAngleX_KO;
+                this.CameraAngleY = this.CameraAngleY_KO;
+            }
+            else
+            {
+                MessageBox.Show(
+                    "Detected Region is not yet supported: " + region,
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error
+                );
+            }
+        }
+
         public class MemoryAddressAndOffset
         {
             public readonly int Address;
@@ -96,5 +137,15 @@ namespace CameraHackTool
 
         public string PlayerNameOffset { get; private set; }
         public string CameraHeightOffset { get; private set; }
+
+        // region specific addresses
+        private MemoryAddressAndOffset CameraZoom_Live;
+        private MemoryAddressAndOffset CameraFOV_Live;
+        private MemoryAddressAndOffset CameraAngleX_Live;
+        private MemoryAddressAndOffset CameraAngleY_Live;
+        private MemoryAddressAndOffset CameraZoom_KO;
+        private MemoryAddressAndOffset CameraFOV_KO;
+        private MemoryAddressAndOffset CameraAngleX_KO;
+        private MemoryAddressAndOffset CameraAngleY_KO;
     }
 }
