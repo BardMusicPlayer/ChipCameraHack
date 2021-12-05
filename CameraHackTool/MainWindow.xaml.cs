@@ -45,7 +45,7 @@ namespace CameraHackTool
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!Metadata.Instance.grabApplicationMetadata("CameraHackTool"))
+            if (!Metadata.Instance.grabApplicationMetadata())
             {
                 Debug.WriteLine("Something has gone terribly wrong");
                 Application.Current.Shutdown();

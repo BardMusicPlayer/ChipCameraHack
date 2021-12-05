@@ -26,6 +26,8 @@
                     {
                         if (string.Equals(proc.ProcessName, "ffxiv_dx11"))
                         {
+                            Metadata.Instance.InitializeToRegionFromGamePath(proc.MainModule.FileName);
+
                             string characterName = Memory.GetCharacterNameFromProcess(proc);
                             if (characterName.Length > 0)
                             {

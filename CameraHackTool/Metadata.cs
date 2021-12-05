@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Windows;
 using System.Xml.Linq;
 
@@ -11,23 +13,34 @@ namespace CameraHackTool
         private static readonly Lazy<Metadata> __arbitur__ = new Lazy<Metadata>(() => new Metadata());
 
         private string UpdateDLUrl = "";
-        private string MetadataUrl = "";
 
+#if DEBUG
+        private string MetadataUrl = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.FullName, "AddressAndOffsetMetadata.xml");
+#else
+        private string MetadataUrl = "https://raw.githubusercontent.com/BardMusicPlayer/ChipCameraHack/main/CameraHackTool/AddressAndOffsetMetadata.xml";
+#endif
         public string LocalVersionString { get; private set; }
         public string NewerVersionString { get; private set; }
+
+        private enum GameRegion
+        {
+            LV = 0,
+            KR = 1,
+            CN = 2,
+        }
+
+        private GameRegion LocalRegion;
 
         protected Metadata()
         {
             this.LocalVersionString = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
 
-        public bool grabApplicationMetadata(string assemblyTitle)
+        public bool grabApplicationMetadata()
         {
-            string finalUrl = MetadataUrl + assemblyTitle;
-            
             try
             {
-                XDocument xmlf = XDocument.Load(finalUrl);
+                XDocument xmlf = XDocument.Load(MetadataUrl);
                 var root = xmlf.Element("Root");
 
                 foreach (var element in root.Elements())
@@ -41,41 +54,32 @@ namespace CameraHackTool
                             this.UpdateDLUrl = element.Value;
                             break;
                         case "AppMetadata":
-                            this.CameraZoom_Live = new MemoryAddressAndOffset(
-                                int.Parse(element.Element("CameraZoom").Element("Address").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                                int.Parse(element.Element("CameraZoom").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
-                            );
-                            this.CameraFOV_Live = new MemoryAddressAndOffset(
-                                int.Parse(element.Element("CameraFOV").Element("Address").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                                int.Parse(element.Element("CameraFOV").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
-                            );
-                            this.CameraAngleX_Live = new MemoryAddressAndOffset(
-                                int.Parse(element.Element("CameraAngleX").Element("Address").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                                int.Parse(element.Element("CameraAngleX").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
-                            );
-                            this.CameraAngleY_Live = new MemoryAddressAndOffset(
-                                int.Parse(element.Element("CameraAngleY").Element("Address").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                                int.Parse(element.Element("CameraAngleY").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
-                            );
-                            this.CameraZoom_KO = new MemoryAddressAndOffset(
-                                int.Parse(element.Element("CameraZoom").Element("AddressKO").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                                int.Parse(element.Element("CameraZoom").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
-                            );
-                            this.CameraFOV_KO = new MemoryAddressAndOffset(
-                                int.Parse(element.Element("CameraFOV").Element("AddressKO").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                                int.Parse(element.Element("CameraFOV").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
-                            );
-                            this.CameraAngleX_KO = new MemoryAddressAndOffset(
-                                int.Parse(element.Element("CameraAngleX").Element("AddressKO").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                                int.Parse(element.Element("CameraAngleX").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
-                            );
-                            this.CameraAngleY_KO = new MemoryAddressAndOffset(
-                                int.Parse(element.Element("CameraAngleY").Element("AddressKO").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
-                                int.Parse(element.Element("CameraAngleY").Element("Offset").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
-                            );
+                            foreach (var region in Enum.GetValues(typeof(GameRegion)))
+                            {
+                                string rs = region.ToString();
+                                var cElem = element.Element(rs);
+                                var oElem = cElem.Element("Offsets");
+                                int address = int.Parse(cElem.Element("Address").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
-                            this.PlayerNameOffset = int.Parse(element.Element("PlayerNameOffset").Value, NumberStyles.Integer, CultureInfo.InvariantCulture).ToString();
-                            this.CameraHeightOffset = int.Parse(element.Element("CameraHeightOffset").Value, NumberStyles.Integer, CultureInfo.InvariantCulture).ToString();
+                                CameraZoomData[rs] = new MemoryAddressAndOffset(
+                                    address,
+                                    int.Parse(oElem.Element("CameraZoom").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
+                                );
+                                CameraFOVData[rs] = new MemoryAddressAndOffset(
+                                    address,
+                                    int.Parse(oElem.Element("CameraFOV").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
+                                );
+                                CameraAngleXData[rs] = new MemoryAddressAndOffset(
+                                    address,
+                                    int.Parse(oElem.Element("CameraAngleX").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
+                                );
+                                CameraAngleYData[rs] = new MemoryAddressAndOffset(
+                                    address,
+                                    int.Parse(oElem.Element("CameraAngleY").Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)
+                                );
+                                PlayerNameData[rs] = int.Parse(oElem.Element("PlayerName").Value, NumberStyles.Integer, CultureInfo.InvariantCulture).ToString();
+                                CameraHeightData[rs] = int.Parse(oElem.Element("CameraHeight").Value, NumberStyles.Integer, CultureInfo.InvariantCulture).ToString();
+                            }
                             break;
                     }
                 }
@@ -93,28 +97,41 @@ namespace CameraHackTool
             return false;
         }
 
-        public void InitializeToRegion(string region)
+        private static bool IsValidGamePath(string path)
         {
-            if (region == "Live")
-            {
-                this.CameraZoom = this.CameraZoom_Live;
-                this.CameraFOV = this.CameraFOV_Live;
-                this.CameraAngleX = this.CameraAngleX_Live;
-                this.CameraAngleY = this.CameraAngleY_Live;
-            }
-            else if (region == "ko")
-            {
-                this.CameraZoom = this.CameraZoom_KO;
-                this.CameraFOV = this.CameraFOV_KO;
-                this.CameraAngleX = this.CameraAngleX_KO;
-                this.CameraAngleY = this.CameraAngleY_KO;
-            }
-            else
+            if (string.IsNullOrWhiteSpace(path))
+                return false;
+
+            if (!Directory.Exists(path))
+                return false;
+
+            if (File.Exists(Path.Combine(path, "game", "ffxivgame.ver")))
+                return File.Exists(Path.Combine(path, "game", "ffxivgame.ver"));
+
+            return false;
+        }
+
+        public void InitializeToRegionFromGamePath(string gamePath)
+        {
+            // find game region from static files
+            this.LocalRegion = GameRegion.LV;
+            string gameDirectory = Path.GetFullPath(Path.Combine(gamePath, "..", "..")).ToString();
+            if (!IsValidGamePath(gameDirectory))
             {
                 MessageBox.Show(
-                    "Detected Region is not yet supported: " + region,
+                    $"Please make sure ffxivgame.ver is in \n\n{gameDirectory}/game directory.",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error
                 );
+                return;
+            }
+
+            if (File.Exists(Path.Combine(gameDirectory, "FFXIVBoot.exe")) || File.Exists(Path.Combine(gameDirectory, "rail_files", "rail_game_identify.json")))
+            {
+                this.LocalRegion = GameRegion.CN;
+            }
+            else if (File.Exists(Path.Combine(gameDirectory, "boot", "FFXIV_Boot.exe")))
+            {
+                this.LocalRegion = GameRegion.KR;
             }
         }
 
@@ -130,22 +147,19 @@ namespace CameraHackTool
             }
         }
 
-        public MemoryAddressAndOffset CameraZoom { get; private set; }
-        public MemoryAddressAndOffset CameraFOV { get; private set; }
-        public MemoryAddressAndOffset CameraAngleX { get; private set; }
-        public MemoryAddressAndOffset CameraAngleY { get; private set; }
-
-        public string PlayerNameOffset { get; private set; }
-        public string CameraHeightOffset { get; private set; }
+        public MemoryAddressAndOffset CameraZoom => CameraZoomData[this.LocalRegion.ToString()];
+        public MemoryAddressAndOffset CameraFOV => CameraFOVData[this.LocalRegion.ToString()];
+        public MemoryAddressAndOffset CameraAngleX => CameraAngleXData[this.LocalRegion.ToString()];
+        public MemoryAddressAndOffset CameraAngleY => CameraAngleYData[this.LocalRegion.ToString()];
+        public string PlayerNameOffset => PlayerNameData[this.LocalRegion.ToString()];
+        public string CameraHeightOffset => CameraHeightData[this.LocalRegion.ToString()];
 
         // region specific addresses
-        private MemoryAddressAndOffset CameraZoom_Live;
-        private MemoryAddressAndOffset CameraFOV_Live;
-        private MemoryAddressAndOffset CameraAngleX_Live;
-        private MemoryAddressAndOffset CameraAngleY_Live;
-        private MemoryAddressAndOffset CameraZoom_KO;
-        private MemoryAddressAndOffset CameraFOV_KO;
-        private MemoryAddressAndOffset CameraAngleX_KO;
-        private MemoryAddressAndOffset CameraAngleY_KO;
+        private Dictionary<string, MemoryAddressAndOffset> CameraZoomData = new Dictionary<string, MemoryAddressAndOffset>();
+        private Dictionary<string, MemoryAddressAndOffset> CameraFOVData = new Dictionary<string, MemoryAddressAndOffset>();
+        private Dictionary<string, MemoryAddressAndOffset> CameraAngleXData = new Dictionary<string, MemoryAddressAndOffset>();
+        private Dictionary<string, MemoryAddressAndOffset> CameraAngleYData = new Dictionary<string, MemoryAddressAndOffset>();
+        private Dictionary<string, string> PlayerNameData = new Dictionary<string, string>();
+        private Dictionary<string, string> CameraHeightData = new Dictionary<string, string>();
     }
 }

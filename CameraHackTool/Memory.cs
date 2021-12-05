@@ -259,20 +259,6 @@ namespace CameraHackTool
             return address + skip + offset + 4;
         }
 
-        private static bool IsValidGamePath(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-                return false;
-
-            if (!Directory.Exists(path))
-                return false;
-
-            if (File.Exists(Path.Combine(path, "game", "ffxivgame.ver")))
-                return File.Exists(Path.Combine(path, "game", "ffxivgame.ver"));
-
-            return false;
-        }
-
         private static void FetchOffsets(Process process)
         {
             var m = MemoryManager.Instance.MemLib;
@@ -300,29 +286,6 @@ namespace CameraHackTool
 
             // Getting static addresses from assembly.
             MemoryManager.Instance.BaseAddress = GSAFS("88 91 ?? ?? ?? ?? 48 8D 3D ?? ?? ?? ??", 9, -8);
-
-            // find game region from static files
-            string regionType = "Live";
-            string gameDirectory = Path.GetFullPath(Path.Combine(process.MainModule.FileName, "..", "..")).ToString();
-            if (!IsValidGamePath(gameDirectory))
-            {
-                MessageBox.Show(
-                    $"Please make sure ffxivgame.ver is in \n\n{gameDirectory}/game directory.",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error
-                );
-                return;
-            }
-
-            if (File.Exists(Path.Combine(gameDirectory, "FFXIVBoot.exe")) || File.Exists(Path.Combine(gameDirectory, "rail_files", "rail_game_identify.json")))
-            {
-                regionType = "zh";
-            }
-            else if (File.Exists(Path.Combine(gameDirectory, "boot", "FFXIV_Boot.exe")))
-            {
-                regionType = "ko";
-            }
-
-            Metadata.Instance.InitializeToRegion(regionType);
         }
 
         private static void ApplyX64(MemoryAddressAndOffset data, float value, IntPtr hProcess)
