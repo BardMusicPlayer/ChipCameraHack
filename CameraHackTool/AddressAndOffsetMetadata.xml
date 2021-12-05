@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+
+<Root>
+    <AppVersion>0.1.5.0</AppVersion>
+    <DownloadLink></DownloadLink>
+    <AppMetadata>
+        <LV>
+            <Address>1E76900</Address>
+            <Offsets>
+                <CameraZoom>114</CameraZoom>
+                <CameraFOV>120</CameraFOV>
+                <CameraAngleX>130</CameraAngleX>
+                <CameraAngleY>134</CameraAngleY>
+                <CameraHeight>124</CameraHeight>
+                <PlayerName>30</PlayerName>
+            </Offsets>
+        </LV>
+        <KR>
+            <Address>1D87610</Address>
+            <Offsets>
+                <CameraZoom>114</CameraZoom>
+                <CameraFOV>120</CameraFOV>
+                <CameraAngleX>130</CameraAngleX>
+                <CameraAngleY>134</CameraAngleY>
+                <CameraHeight>124</CameraHeight>
+                <PlayerName>30</PlayerName>
+            </Offsets>
+        </KR>
+        <CN>
+            <Address>1D87610</Address>
+            <Offsets>
+                <CameraZoom>114</CameraZoom>
+                <CameraFOV>120</CameraFOV>
+                <CameraAngleX>130</CameraAngleX>
+                <CameraAngleY>134</CameraAngleY>
+                <CameraHeight>124</CameraHeight>
+                <PlayerName>30</PlayerName>
+            </Offsets>
+        </CN>
+    </AppMetadata>
+</Root>
