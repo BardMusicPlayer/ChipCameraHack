@@ -49,10 +49,33 @@ namespace CameraHackTool
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!Metadata.Instance.grabApplicationMetadata())
+            var res = Metadata.Instance.grabApplicationMetadata();
+            switch (res)
             {
-                Debug.WriteLine("Something has gone terribly wrong");
-                Application.Current.Shutdown();
+                case Metadata.MetadataResult.Failure:
+                    Debug.WriteLine("Something has gone terribly wrong");
+                    Application.Current.Shutdown();
+                    break;
+                case Metadata.MetadataResult.UpdateAvailable:
+                    var opt = MessageBox.Show(
+                        $"You are running version {Metadata.Instance.LocalVersion.ToString(2)}.\n" +
+                        $"Update {Metadata.Instance.NewerVersion.ToString(2)} is available for download.\n\n" +
+                        $"Go to the downloads page?\n\n",
+                        "Update Available", MessageBoxButton.YesNoCancel
+                    );
+
+                    switch (opt)
+                    {
+                        case MessageBoxResult.Yes:
+                            Process.Start(new ProcessStartInfo { FileName = Metadata.Instance.DownloadURL, UseShellExecute = true });
+                            break;
+                        case MessageBoxResult.Cancel:
+                            Application.Current.Shutdown();
+                            break;
+                    }
+                    break;
+                case Metadata.MetadataResult.Success:
+                    break;
             }
         }
 

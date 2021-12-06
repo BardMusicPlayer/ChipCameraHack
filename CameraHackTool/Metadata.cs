@@ -12,15 +12,18 @@ namespace CameraHackTool
         public static Metadata Instance { get { return __arbitur__.Value; } }
         private static readonly Lazy<Metadata> __arbitur__ = new Lazy<Metadata>(() => new Metadata());
 
-        private string UpdateDLUrl = "";
-
 #if DEBUG
         private string MetadataUrl = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.FullName, "AddressAndOffsetMetadata.xml");
 #else
         private string MetadataUrl = "https://raw.githubusercontent.com/BardMusicPlayer/ChipCameraHack/main/CameraHackTool/AddressAndOffsetMetadata.xml";
 #endif
-        public string LocalVersionString { get; private set; }
-        public string NewerVersionString { get; private set; }
+
+        public enum MetadataResult
+        {
+            Success,
+            UpdateAvailable,
+            Failure
+        }
 
         private enum GameRegion
         {
@@ -29,14 +32,12 @@ namespace CameraHackTool
             CN = 2,
         }
 
-        private GameRegion LocalRegion;
-
         protected Metadata()
         {
-            this.LocalVersionString = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            this.LocalVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
         }
 
-        public bool grabApplicationMetadata()
+        public MetadataResult grabApplicationMetadata()
         {
             try
             {
@@ -48,10 +49,10 @@ namespace CameraHackTool
                     switch (element.Name.LocalName)
                     {
                         case "AppVersion":
-                            this.NewerVersionString = element.Value;
+                            this.NewerVersion = new Version(element.Value);
                             break;
                         case "DownloadLink":
-                            this.UpdateDLUrl = element.Value;
+                            this.DownloadURL = element.Value;
                             break;
                         case "AppMetadata":
                             foreach (var region in Enum.GetValues(typeof(GameRegion)))
@@ -84,7 +85,13 @@ namespace CameraHackTool
                     }
                 }
 
-                return true;
+                // -1 means earlier than
+                if (this.LocalVersion.CompareTo(this.NewerVersion) == -1)
+                {
+                    return MetadataResult.UpdateAvailable;
+                }
+
+                return MetadataResult.Success;
             }
             catch (Exception e)
             {
@@ -94,7 +101,7 @@ namespace CameraHackTool
                 );
             }
 
-            return false;
+            return MetadataResult.Failure;
         }
 
         private static bool IsValidGamePath(string path)
@@ -147,6 +154,9 @@ namespace CameraHackTool
             }
         }
 
+        public Version LocalVersion { get; private set; }
+        public Version NewerVersion { get; private set; }
+        public string DownloadURL { get; private set; }
         public MemoryAddressAndOffset CameraZoom => CameraZoomData[this.LocalRegion.ToString()];
         public MemoryAddressAndOffset CameraFOV => CameraFOVData[this.LocalRegion.ToString()];
         public MemoryAddressAndOffset CameraAngleX => CameraAngleXData[this.LocalRegion.ToString()];
@@ -155,6 +165,7 @@ namespace CameraHackTool
         public string CameraHeightOffset => CameraHeightData[this.LocalRegion.ToString()];
 
         // region specific addresses
+        private GameRegion LocalRegion;
         private Dictionary<string, MemoryAddressAndOffset> CameraZoomData = new Dictionary<string, MemoryAddressAndOffset>();
         private Dictionary<string, MemoryAddressAndOffset> CameraFOVData = new Dictionary<string, MemoryAddressAndOffset>();
         private Dictionary<string, MemoryAddressAndOffset> CameraAngleXData = new Dictionary<string, MemoryAddressAndOffset>();
