@@ -220,5 +220,10 @@ namespace CameraHackTool
                 ListBox_RunningProcesses.Items.Refresh();
             }
         }
+
+        private void Button_Info_Click(object sender, RoutedEventArgs e)
+        {
+            // display an info popup
+        }
     }
 }

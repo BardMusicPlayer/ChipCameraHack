@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CameraHackTool"
         mc:Ignorable="d"
-        Title="" Height="310" Width="540" Icon="Resources/Logo.ico" Closing="Window_Closing" MinWidth="540" MinHeight="310" WindowStartupLocation="CenterScreen" Background="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}">
+        Title="" Height="310" Width="540" Icon="../Resources/Logo.ico" Closing="Window_Closing" MinWidth="540" MinHeight="310" WindowStartupLocation="CenterScreen" Background="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}">
     <Grid MinWidth="540" MinHeight="280">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="22*"/>
@@ -28,6 +28,7 @@
         <Button x:Name="Button_StopAllProcesses" Content="Stop All" HorizontalAlignment="Left" Margin="232.667,0,0,20" VerticalAlignment="Bottom" Width="90" Click="Button_StopAllProcesses_Click" Height="50" Grid.Column="1" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" />
         <Button x:Name="Button_RemoveProcess" Content="Remove" HorizontalAlignment="Left" Margin="336.667,0,0,20" VerticalAlignment="Bottom" Width="90" Click="Button_RemoveProcess_Click" Height="50" Grid.Column="1" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" />
         <Label x:Name="Label_Description" Content="Current Characters:" HorizontalAlignment="Left" Margin="126.667,10,0,0" VerticalAlignment="Top" Width="300" HorizontalContentAlignment="Center" Grid.Column="1" FontWeight="Bold"/>
-        <Image x:Name="Image_Logo" HorizontalAlignment="Left" Height="100" Margin="55,159,0,0" VerticalAlignment="Top" Width="100" Source="Resources/Logo.ico" Grid.ColumnSpan="2"/>
+        <Image x:Name="Image_Logo" HorizontalAlignment="Left" Height="100" Margin="55,159,0,0" VerticalAlignment="Top" Width="100" Source="../Resources/Logo.ico" Grid.ColumnSpan="2"/>
+        <Button x:Name="Button_Info" Content="Info" HorizontalAlignment="Left" Height="20" Margin="2,0,0,11" VerticalAlignment="Bottom" Width="40" Click="Button_Info_Click" Grid.Column="0" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" />
     </Grid>
 </Window>
