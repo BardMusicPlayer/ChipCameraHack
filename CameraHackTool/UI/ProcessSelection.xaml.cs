@@ -1,4 +1,4 @@
-﻿namespace FFXIVUtil
+﻿namespace UI
 {
     using System.Diagnostics;
     using System.Collections.Generic;

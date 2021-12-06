@@ -1,0 +1,17 @@
+﻿<Window x:Class="CameraHackTool.UI.Information"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CameraHackTool.UI"
+        mc:Ignorable="d"
+        Title="About ChipCameraHack" Height="350" Width="700" Background="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="150*"/>
+            <ColumnDefinition Width="150*"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock x:Name="TextBlock_Info" Margin="10,10,10,10" TextWrapping="Wrap" Grid.ColumnSpan="2" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+        </TextBlock>
+    </Grid>
+</Window>

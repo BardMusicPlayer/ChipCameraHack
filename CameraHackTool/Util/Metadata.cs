@@ -14,9 +14,9 @@ namespace CameraHackTool
         private static readonly Lazy<Metadata> __arbitur__ = new Lazy<Metadata>(() => new Metadata());
 
 #if DEBUG
-        private string MetadataUrl = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.FullName, "Resources/AddressAndOffsetMetadata.xml");
+        public string MetadataURL = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.FullName, "Resources/AddressAndOffsetMetadata.xml");
 #else
-        private string MetadataUrl = "https://raw.githubusercontent.com/BardMusicPlayer/ChipCameraHack/main/CameraHackTool/AddressAndOffsetMetadata.xml";
+        public string MetadataURL = "https://raw.githubusercontent.com/BardMusicPlayer/ChipCameraHack/main/CameraHackTool/AddressAndOffsetMetadata.xml";
 #endif
 
         public enum MetadataResult
@@ -27,7 +27,7 @@ namespace CameraHackTool
             Failure
         }
 
-        private enum GameRegion
+        public enum GameRegion
         {
             LV = 0,
             KR = 1,
@@ -43,7 +43,7 @@ namespace CameraHackTool
         {
             try
             {
-                XDocument xmlf = XDocument.Load(MetadataUrl);
+                XDocument xmlf = XDocument.Load(MetadataURL);
                 var root = xmlf.Element("Root");
 
                 foreach (var element in root.Elements())
@@ -172,7 +172,7 @@ namespace CameraHackTool
         public string CameraHeightOffset => CameraHeightData[this.LocalRegion.ToString()];
 
         // region specific addresses
-        private GameRegion LocalRegion;
+        public GameRegion LocalRegion;
         private Dictionary<string, MemoryAddressAndOffset> CameraZoomData = new Dictionary<string, MemoryAddressAndOffset>();
         private Dictionary<string, MemoryAddressAndOffset> CameraFOVData = new Dictionary<string, MemoryAddressAndOffset>();
         private Dictionary<string, MemoryAddressAndOffset> CameraAngleXData = new Dictionary<string, MemoryAddressAndOffset>();

@@ -1,5 +1,4 @@
-﻿using FFXIVUtil;
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Windows;
@@ -7,6 +6,8 @@ using System.Windows.Controls;
 using System.Diagnostics;
 using System.Windows.Threading;
 using System.Reflection;
+using CameraHackTool.UI;
+using UI;
 
 namespace CameraHackTool
 {
@@ -223,7 +224,14 @@ namespace CameraHackTool
 
         private void Button_Info_Click(object sender, RoutedEventArgs e)
         {
-            // display an info popup
+            Information processSelection = new Information();
+            processSelection.Top = this.Top;
+            processSelection.Left = this.Left;
+            Nullable<bool> dialogResult = processSelection.ShowDialog();
+            if (dialogResult == true)
+            {
+                // ???
+            }
         }
     }
 }
