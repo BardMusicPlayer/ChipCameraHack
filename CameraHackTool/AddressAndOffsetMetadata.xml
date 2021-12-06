@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 
 <Root>
-    <AppVersion>0.1.5.0</AppVersion>
-    <DownloadLink></DownloadLink>
+    <AppVersion>1.5.0.0</AppVersion>
+    <DownloadLink>https://github.com/BardMusicPlayer/ChipCameraHack/releases</DownloadLink>
     <AppMetadata>
         <LV>
             <Address>1E76900</Address>
