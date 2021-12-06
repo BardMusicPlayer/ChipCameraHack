@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Diagnostics;
 using System.Windows.Threading;
+using System.Reflection;
 
 namespace CameraHackTool
 {
@@ -41,6 +42,9 @@ namespace CameraHackTool
 
             // initialize variables
             ListBox_RunningProcesses.DataContext = AllSelectedProcesses;
+
+            // set title to show version information
+            this.Title = "ChipCameraHack v" + Assembly.GetExecutingAssembly().GetName().Version.ToString(2);
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
