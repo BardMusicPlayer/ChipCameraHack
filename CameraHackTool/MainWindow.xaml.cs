@@ -56,6 +56,9 @@ namespace CameraHackTool
                     Debug.WriteLine("Something has gone terribly wrong");
                     Application.Current.Shutdown();
                     break;
+                case Metadata.MetadataResult.RunningBeta:
+                    this.Title += " (Beta)";
+                    break;
                 case Metadata.MetadataResult.UpdateAvailable:
                     var opt = MessageBox.Show(
                         $"You are running version {Metadata.Instance.LocalVersion.ToString(2)}.\n" +

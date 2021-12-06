@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Xml.Linq;
 
@@ -22,6 +23,7 @@ namespace CameraHackTool
         {
             Success,
             UpdateAvailable,
+            RunningBeta,
             Failure
         }
 
@@ -34,7 +36,7 @@ namespace CameraHackTool
 
         protected Metadata()
         {
-            this.LocalVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            this.LocalVersion = Assembly.GetExecutingAssembly().GetName().Version;
         }
 
         public MetadataResult grabApplicationMetadata()
@@ -89,6 +91,11 @@ namespace CameraHackTool
                 if (this.LocalVersion.CompareTo(this.NewerVersion) == -1)
                 {
                     return MetadataResult.UpdateAvailable;
+                }
+                // 1 means later than
+                else if (this.LocalVersion.CompareTo(this.NewerVersion) == 1)
+                {
+                    return MetadataResult.RunningBeta;
                 }
 
                 return MetadataResult.Success;
