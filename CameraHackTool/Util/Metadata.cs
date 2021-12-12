@@ -16,7 +16,7 @@ namespace CameraHackTool
 #if DEBUG
         public string MetadataURL = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.FullName, "Resources/AddressAndOffsetMetadata.xml");
 #else
-        public string MetadataURL = "https://raw.githubusercontent.com/BardMusicPlayer/ChipCameraHack/main/CameraHackTool/AddressAndOffsetMetadata.xml";
+        public string MetadataURL = "https://raw.githubusercontent.com/BardMusicPlayer/ChipCameraHack/main/CameraHackTool/Resources/AddressAndOffsetMetadata.xml";
 #endif
 
         public enum MetadataResult
