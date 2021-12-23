@@ -44,14 +44,13 @@
   <PropertyGroup>
     <StartupObject>CameraHackTool.App</StartupObject>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\System.ValueTuple.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -156,5 +155,33 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <PropertyGroup Label="UserDefinedVariables">
+    <!-- Get Windows SDK root folder-->
+    <WindowsKitsRoot>$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots', 'KitsRoot10', null, RegistryView.Registry32, RegistryView.Default))</WindowsKitsRoot>
+    <WindowsKitsRoot Condition="'$(WindowsKitsRoot)' == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots', 'KitsRoot81', null, RegistryView.Registry32, RegistryView.Default))</WindowsKitsRoot>
+    <WindowsKitsRoot Condition="'$(WindowsKitsRoot)' == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots', 'KitsRoot', null, RegistryView.Registry32, RegistryView.Default))</WindowsKitsRoot>
+    <!-- Evaluates the most recent Windows SDK folder containing SignTool.exe -->
+    <!-- add new versions here, duplicating following line -->
+    <SignToolFolder Condition="'$(SignToolFolder)' == '' And exists('$(WindowsKitsRoot)bin\10.0.18362.0\x64\Signtool.exe')">$(WindowsKitsRoot)bin\10.0.18362.0\x64\</SignToolFolder>
+    <SignToolFolder Condition="'$(SignToolFolder)' == '' And exists('$(WindowsKitsRoot)bin\10.0.17763.0\x64\Signtool.exe')">$(WindowsKitsRoot)bin\10.0.17763.0\x64\</SignToolFolder>
+    <SignToolFolder Condition="'$(SignToolFolder)' == '' And exists('$(WindowsKitsRoot)bin\10.0.17134.0\x64\Signtool.exe')">$(WindowsKitsRoot)bin\10.0.17134.0\x64\</SignToolFolder>
+    <SignToolFolder Condition="'$(SignToolFolder)' == '' And exists('$(WindowsKitsRoot)bin\10.0.16299.0\x64\Signtool.exe')">$(WindowsKitsRoot)bin\10.0.16299.0\x64\</SignToolFolder>
+    <SignToolFolder Condition="'$(SignToolFolder)' == '' And exists('$(WindowsKitsRoot)bin\10.0.15063.0\x64\Signtool.exe')">$(WindowsKitsRoot)bin\10.0.15063.0\x64\</SignToolFolder>
+    <SignToolFolder Condition="'$(SignToolFolder)' == '' And exists('$(WindowsKitsRoot)bin\10.0.14393.0\x64\Signtool.exe')">$(WindowsKitsRoot)bin\10.0.14393.0\x64\</SignToolFolder>
+    <SignToolFolder Condition="'$(SignToolFolder)' == '' And '$(Platform)' == 'AnyCPU' ">$(WindowsKitsRoot)bin\x64\</SignToolFolder>
+    <SignToolFolder Condition="'$(SignToolFolder)' == ''">$(WindowsKitsRoot)bin\$(Platform)\</SignToolFolder>
+    <!-- Now we should be able to calculate SignTool.exe fullpath -->
+    <SignToolExe Condition=" '$(SignToolFolder)' != '' ">$(SignToolFolder)SignTool.exe</SignToolExe>
+  </PropertyGroup>
+  <!-- Finally, I would suggest you add the following lines to your project file because they will be quite usefull when things go wrong (and they will) -->
+  <!-- Send indivual compile bessages to MSBuild output so you check the value of each variable -->
+  <Target Name="ShowUserDefinedVariables" BeforeTargets="BeforeBuild">
+    <Message Importance="High" Text="WindowsKitsRoot = $(WindowsKitsRoot)" />
+    <Message Importance="High" Text="SignToolFolder = $(SignToolFolder)" />
+    <Message Importance="High" Text="SignToolExe = $(SignToolExe)" />
+  </Target>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>IF EXIST "$(SolutionDir)/Signing/signfile.bat" call "$(SolutionDir)/Signing/signfile.bat" "$(SignToolExe)" "$(TargetPath)"</PostBuildEvent>
+  </PropertyGroup>
 </Project>
