@@ -7,11 +7,11 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("CameraHackTool")]
+[assembly: AssemblyTitle("ChipCameraHack")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Chipotle Ismylife")]
-[assembly: AssemblyProduct("CameraHackTool")]
+[assembly: AssemblyCompany("trotlinebeercan")]
+[assembly: AssemblyProduct("ChipCameraHack")]
 [assembly: AssemblyCopyright("Copyright © 2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -53,3 +53,4 @@ using System.Windows;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.6")]
 [assembly: AssemblyFileVersion("1.6")]
+[assembly: NeutralResourcesLanguage("en-US")]
