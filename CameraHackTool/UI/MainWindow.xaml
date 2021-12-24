@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CameraHackTool"
         mc:Ignorable="d"
-        Title="" Height="310" Width="540" Icon="../Resources/Logo.ico" Closing="Window_Closing" MinWidth="540" MinHeight="310" WindowStartupLocation="CenterScreen" Background="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}">
+        Title="" Height="310" Width="540" Icon="../Resources/Logo.ico" Closing="Window_Closing" MinWidth="540" MinHeight="310" WindowStartupLocation="CenterScreen" Background="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}"
+        Style="{StaticResource ChipotleWindowStyle}">
     <Grid MinWidth="540" MinHeight="280">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="22*"/>
