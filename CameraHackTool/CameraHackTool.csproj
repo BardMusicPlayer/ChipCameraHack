@@ -182,6 +182,6 @@
   </Target>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>IF EXIST "$(SolutionDir)/Signing/signfile.bat" call "$(SolutionDir)/Signing/signfile.bat" "$(SignToolExe)" "$(TargetPath)"</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName)==Release IF EXIST "$(SolutionDir)/Signing/signfile.bat" call "$(SolutionDir)/Signing/signfile.bat" "$(SignToolExe)" "$(TargetPath)"</PostBuildEvent>
   </PropertyGroup>
 </Project>
