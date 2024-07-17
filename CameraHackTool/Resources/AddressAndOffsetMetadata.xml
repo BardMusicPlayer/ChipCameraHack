@@ -5,7 +5,7 @@
     <DownloadLink>https://github.com/BardMusicPlayer/ChipCameraHack/releases</DownloadLink>
     <AppMetadata>
         <LV>
-            <Address>272F730</Address>
+            <Address>2731720</Address>
             <Offsets>
                 <CameraZoom>124</CameraZoom>
                 <CameraFOV>130</CameraFOV>
